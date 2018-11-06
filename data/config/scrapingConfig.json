@@ -1,0 +1,7 @@
+{
+    "sessionId": "scraping----2018-11-4_12_23_50",
+    "useMongoDb": true,
+    "mongoUrl": "mongodb+srv://fresh:1234@cluster0-ojz1y.mongodb.net/real-state-db?retryWrites=true",
+    "db": "realstate-db",
+    "collection": "summaries"
+}
