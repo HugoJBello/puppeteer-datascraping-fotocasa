@@ -46,17 +46,50 @@ module.exports = class ScraperPuppeteerFotocasa {
         this.resetIndexAndFinalize();
     }
 
-    initializeMunicipio(nmun) {
+    async initializeMunicipio(nmun) {
         if (!fs.existsSync(this.tmpDirSession)) {
             fs.mkdirSync("./" + this.tmpDirSession);
         }
         let nmunPath = this.tmpDirSession + "/" + nmun + "---" + this.config.sessionId + ".json";
         if (fs.existsSync(nmunPath)) {
-            return require("./" + nmunPath);
+            if (this.config.useMongoDb) {
+                return await this.getMunicipioFromMongo(nmun);
+            } else {
+                return require("./" + nmunPath);
+            }
         } else {
             return { _id: nmun + "---" + this.config.sessionId, nmun: nmun, scrapingId: this.config.sessionId, date: this.date, cusecs: {} };
         }
     }
+
+    async getMunicipioFromMongo(nmun) {
+        const self = this;
+        const url = this.config.mongoUrl;
+        const scrapingId = this.config.sessionId;
+        return new Promise((resolve, reject) => {
+            self.MongoClient.connect(url, function (err, client) {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                }
+                const dbName = "airbnb-db";
+                const collectionName = "summaries-airbnb-scraping";
+                console.log("geting from mongo");
+                const collection = client.db(dbName).collection(collectionName);
+                const _id = nmun + "---" + scrapingId;
+                console.log(_id);
+                collection.findOne({ _id }, (err, result) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    console.log(result);
+                    resolve(result);
+                });
+                client.close();
+            });
+        });
+    }
+
     initializeConfigAndIndex() {
         this.config = require("./data/config/scrapingConfig.json");
         this.scrapingIndex = require("./data/separatedFeatures/scrapingIndex.json");
