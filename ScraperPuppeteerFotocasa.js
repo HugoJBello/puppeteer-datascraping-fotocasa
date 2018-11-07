@@ -6,7 +6,7 @@ module.exports = class ScraperPuppeteerFotocasa {
         this.browser = null;
         this.page = null;
         this.timeWaitStart = 3 * 1000;
-        this.timeWaitClick = 500;
+        this.timeWaitClick = 1000;
         this.retries = 3;
         this.urls = ["https://www.airbnb.es/s/madrid/homes?refinement_paths%5B%5D=%2Fhomes&query=madrid&click_referer=t%3ASEE_ALL%7Csid%3Aa7d1f39d-6aca-46ed-978b-e7866130e117%7Cst%3AMAGAZINE_HOMES&allow_override%5B%5D=&map_toggle=true&zoom=17&search_by_map=true&sw_lat=40.40905406647768&sw_lng=-3.705462275072205&ne_lat=40.414397095593216&ne_lng=-3.69920720677469&s_tag=17boGCJc",
             "https://www.airbnb.es/s/madrid/homes?refinement_paths%5B%5D=%2Fhomes&query=madrid&click_referer=t%3ASEE_ALL%7Csid%3Aa7d1f39d-6aca-46ed-978b-e7866130e117%7Cst%3AMAGAZINE_HOMES&allow_override%5B%5D=&map_toggle=true&zoom=15&search_by_map=true&sw_lat=40.41092513867345&sw_lng=-3.703897645186509&ne_lat=40.41257982118033&ne_lng=-3.700771836660386&s_tag=gSIPGig_"];
@@ -73,7 +73,8 @@ module.exports = class ScraperPuppeteerFotocasa {
             const centerPoint = cusecFeature.centerPoint;
 
             //https://www.fotocasa.es/es/comprar/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=-3.8271903991699223,40.48299278830796;-3.8271903991699223,40.36760453588204;-3.538284301757813,40.36760453588204;-3.538284301757813,40.48299278830796;-3.8271903991699223,40.48299278830796&latitudeCenter=40.42532340569747&longitudeCenter=-3.6827373504638676&zoom=13
-            const url = `https://www.fotocasa.es/es/comprar/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=${boundingBox[0][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[0][1]};${boundingBox[0][0]},${boundingBox[1][0]}&latitudeCenter=${centerPoint[1]}&longitudeCenter=${centerPoint[0]}&zoom=16`
+            const url = `https://www.fotocasa.es/es/comprar/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=${boundingBox[0][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[1][1]};&latitudeCenter=${centerPoint[1]}&longitudeCenter=${centerPoint[0]}&zoom=16`
+
             console.log("\n");
             console.log(url);
             console.log("\n");
@@ -83,35 +84,42 @@ module.exports = class ScraperPuppeteerFotocasa {
             await this.page.goto(url);
             await this.page.waitFor(this.timeWaitStart);
 
-            let numberOfEntries;
-            let prize;
+            if (await this.anyResultsFound()) {
 
-            let tryCount = 1;
-            let tryAgain = true
-            /*
-            numberOfEntries = await this.extractNumberOfEntries();
-            console.log("found " + numberOfEntries + " entries in this page");
+                let numberOfEntries;
+                //numberOfEntries = await this.extractNumberOfEntries();
 
-            prize = await this.extracPrize();
-            console.log("average prize " + prize + "  in this page");
-       
-            const newData = { date: new Date(), number_of_ads: numberOfEntries, average_prize: prize };
+                let adData = [];
+                let isNextPage = true;
+                let pageNum = 1;
+                while (isNextPage) {
+                    console.log("-->scraping page " + pageNum);
+                    const pageData = await this.extractPageData();
+
+                    adData.push(...pageData);
+                    //console.log("found " + numberOfEntries + " entries in this page");
+                    isNextPage = await this.goToNextPage();
+                    pageNum = pageNum + 1;
+                }
+
+                let averagePrize = this.calculateAverage(adData);
+                console.log(adData);
+                console.log("------> " + averagePrize);
+
+            }
+
 
             await this.page.screenshot({ path: 'example.png' });
-            await this.saveHtml();
             await this.browser.close();
 
-            return newData;
-            */
+
+
         } catch (err) {
             console.log(err);
             return undefined;
         }
     }
-    async saveHtml() {
-        let bodyHTML = await this.page.evaluate(() => document.body.innerHTML);
-        fs.writeFileSync("./data/htmPage.html", bodyHTML);
-    }
+
     async initializePuppeteer() {
         this.browser = await puppeteer.launch({
             //executablePath: '/usr/bin/chromium-browser'
@@ -122,90 +130,95 @@ module.exports = class ScraperPuppeteerFotocasa {
         this.page = await this.browser.newPage();
     }
 
+    async goToNextPage() {
+        try {
+            const form = await this.page.$x("//a[contains(text(), '>')]");
+            if (form.length > 0) {
+                await form[0].click();
+                await this.page.waitFor(this.timeWaitClick);
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+    async extractPageData() {
+        try {
+            let data = [];
+            const divs = await this.page.$$('div.sui-CardComposable-secondary');
+            for (const div of divs) {
+
+                /*
+                let divCopy = Object.create(div);
+                const spanMeters = await divCopy.$$('span.re-Card-wrapperFeatures')
+                let meters = await (await spanMeters[1].getProperty('textContent')).jsonValue();
+                meters = meters.replace("m²", "").trim();
+
+                const spanPrize = await div.$('span.re-Card-price>span')
+                let prize = await (await spanPrize.getProperty('textContent')).jsonValue();
+                prize = prize.replace("€", "").trim();
+                */
+                try {
+                    const content = await this.page.evaluate(el => el.innerHTML, div);
+
+                    const auxPrize = content.split("€")[0]
+                    const prize = auxPrize.split("<span>")[auxPrize.split("<span>").length - 1].trim().replace(".", "");
+
+                    const auxMeters = content.split("m²")[0]
+                    const meters = auxMeters.split('<span class="re-Card-feature">')[auxMeters.split('<span class="re-Card-feature">').length - 1].trim();
+
+                    if (meters.indexOf("hab") > -1 || prize.indexOf(">") > -1) {
+                        throw Error;
+                    }
+                    const newAdInfo = { prize, meters }
+                    data.push(newAdInfo);
+                } catch (err) {
+                    console.log("error obtaining prize");
+                    //console.log(err);
+                }
+
+            }
+
+            return data
+        } catch (err) {
+            console.log(err);
+        }
+
+
+    }
+
+    calculateAverage(adData) {
+        let sum = 0;
+
+        for (const data of adData) {
+            sum = sum + data.prize / data.meters;
+        }
+
+        return sum / adData.length;
+    }
+
+    async saveHtml() {
+        let bodyHTML = await this.page.evaluate(() => document.body.innerHTML);
+        fs.writeFileSync("./data/htmPage.html", bodyHTML);
+    }
+
     async anyResultsFound() {
-        let title = await this.titleNumEntriesLess300();
-        if (title) {
-            return title.indexOf("alojamientos") > -1
-        } else return false;
-    }
-
-    async extracPrize() {
-        await this.clickPrizeButton();
-        return await this.readPrize();
-    }
-
-    async clickPrizeButton() {
+        const noResultsClass = "div.re-SearchresultNoResults-text";
         try {
-            const form = await this.page.$$('button._1i67wnzj');
-            await form[3].click();
-            await this.page.waitFor(this.timeWaitClick);
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    async readPrize() {
-        try {
-            const div = await this.page.$('div._1nhodd4u');
+            const div = await this.page.$(noResultsClass);
             const text = await (await div.getProperty('textContent')).jsonValue();
-            const prize = text.replace("El precio medio por noche es de ", "").replace("€", "").trim();
-            return prize;
+            return text == undefined;
         } catch (err) {
-            console.log(err);
-        }
-    }
-    async extractNumberOfEntries() {
-        let numberOfEntries;
-        let titleNumEntries = await this.titleNumEntriesLess300();
-        if (!titleNumEntries) {
-            titleNumEntries = await this.extractMoreThan300();
-        }
-        if (titleNumEntries.indexOf("Más de") === -1) {
-            numberOfEntries = titleNumEntries;
-        } else {
-            await this.goToLastPage()
-            numberOfEntries = await this.readNumberOfEntries();
-        }
-        return numberOfEntries.replace("alojamientos", "").trim();
-    }
-
-    async titleNumEntriesLess300() {
-        //_jmmm34f
-        try {
-            const div = await this.page.$('h3._jmmm34f>div>div');
-            const text = await (await div.getProperty('textContent')).jsonValue();
-            return text
-        } catch (err) {
-            console.log(err);
-            await this.saveHtml();
-            return undefined;
-        }
-
-    }
-
-    async extractMoreThan300() {
-        //_jmmm34f
-        try {
-            const div = await this.page.$('h3._jmmm34f>div');
-            const text = await (await div.getProperty('textContent')).jsonValue();
-            return text
-        } catch (err) {
-            console.log(err);
-            await this.saveHtml();
-            return undefined;
+            return true
         }
     }
 
-    async goToLastPage() {
-        try {
-            const form = await this.page.$$('li._1am0dt>a._1ip5u88');
-            const len = form.length;
-            await form[len - 1].click();
-            await this.page.waitFor(this.timeWaitClick);
-        } catch (err) {
-            console.log(err);
-        }
-    }
+
 
     async readNumberOfEntries() {
         try {
@@ -220,25 +233,46 @@ module.exports = class ScraperPuppeteerFotocasa {
     }
 
 
-    async saveData(municipioResults, nmun) {
+    async saveData(municipioResults, nmun, cusecName) {
         let nmunPath = this.tmpDirSession + "/" + nmun + "---" + this.config.sessionId + ".json";
         fs.writeFileSync(nmunPath, JSON.stringify(municipioResults));
         if (this.config.useMongoDb) {
-            await this.saveDataInMongo(municipioResults, nmun);
+            await this.saveDataInMongo(municipioResults, nmun, cusecName);
+            // await this.updateStateExecMongo(municipioResults.cusec, nmun, true);
         }
     }
 
-    async saveDataInMongo(municipioResults, nmun) {
+    async saveDataInMongo(municipioResults, nmun, cusecName) {
+        const scrapingId = this.config.sessionId
         await this.MongoClient.connect(this.config.mongoUrl, function (err, client) {
             const db = "airbnb-db";
             const collectionName = "summaries-airbnb-scraping";
             console.log("saving data in mongodb");
             const collection = client.db(db).collection(collectionName);
             collection.save(municipioResults);
+
+            const dbIndex = "airbnb-db";
+            const collectionNameIndex = "state-execution-airbnb-scraping";
+            console.log("updating log in mongodb");
+            const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: true, lastNmun: nmun, lastCusec: cusecName }
+            const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
+            collectionIndex.save(executionDataLogIndex);
             client.close();
         });
     }
 
+    async updateStateExecMongo(cusecName, nmun, active) {
+        const scrapingId = this.config.sessionId
+        await this.MongoClient.connect(this.config.mongoUrl, function (err, client) {
+            const dbIndex = "index-airbnb-db";
+            const collectionNameIndex = "state-execution-airbnb-scraping";
+            console.log("updating log in mongodb");
+            const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastCusec: cusecName }
+            const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
+            collectionIndex.save(executionDataLogIndex);
+            client.close();
+        });
+    }
     saveDataAsCSV(municipioResults, nmun) {
         let nmunPath = this.tmpDirSession + "/" + nmun + "---" + this.config.sessionId + ".csv";
         const header = "CUSEC;NMUN;N_ANUN;P_MEDIO;FECHA\n"
@@ -250,12 +284,13 @@ module.exports = class ScraperPuppeteerFotocasa {
         fs.writeFileSync(this.scrapingIndexPath, JSON.stringify(this.scrapingIndex));
     }
 
-    resetIndexAndFinalize() {
+    async resetIndexAndFinalize() {
         const FeatureProcessor = require('./FeatureProcessor');
         const featureProcessor = new FeatureProcessor();
         featureProcessor.processAllFeaturesAndCreateIndex();
         this.date = new Date().toLocaleString().replace(/:/g, '_').replace(/ /g, '_').replace(/\//g, '_');
-        this.config.scrapingId = "scraping---" + this.date;
+        if (this.config.saveDataInMongo) await this.updateStateExecMongo("none", "none", false);
+        this.config.scrapingId = "scraping-airbnb--" + this.date;
         fs.writeFileSync("./data/config/scrapingConfig.json", JSON.stringify(this.config));
     }
 
