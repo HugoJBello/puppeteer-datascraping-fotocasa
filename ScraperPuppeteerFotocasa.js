@@ -122,13 +122,11 @@ module.exports = class ScraperPuppeteerFotocasa {
             console.log(url);
             console.log("---");
 
-
-            await this.initializePuppeteer();
-            await this.page.goto(url);
-            await this.page.waitFor(this.timeWaitStart);
-
             if (await this.anyResultsFound()) {
 
+                await this.initializePuppeteer();
+                await this.page.goto(url);
+                await this.page.waitFor(this.timeWaitStart);
                 let numberOfEntries;
                 //numberOfEntries = await this.extractNumberOfEntries();
 
