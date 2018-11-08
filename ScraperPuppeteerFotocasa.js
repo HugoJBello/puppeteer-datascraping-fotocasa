@@ -115,16 +115,16 @@ module.exports = class ScraperPuppeteerFotocasa {
             const boundingBox = cusecFeature.boundingBox;
             const centerPoint = cusecFeature.centerPoint;
 
-            await this.initializePuppeteer();
-            await this.page.goto(url);
-            await this.page.waitFor(this.timeWaitStart);
-
             //https://www.fotocasa.es/es/comprar/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=-3.8271903991699223,40.48299278830796;-3.8271903991699223,40.36760453588204;-3.538284301757813,40.36760453588204;-3.538284301757813,40.48299278830796;-3.8271903991699223,40.48299278830796&latitudeCenter=40.42532340569747&longitudeCenter=-3.6827373504638676&zoom=13
             const url = `https://www.fotocasa.es/es/comprar/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=${boundingBox[0][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[1][1]};&latitudeCenter=${centerPoint[1]}&longitudeCenter=${centerPoint[0]}&zoom=16`
 
             console.log("\n---");
             console.log(url);
             console.log("---");
+
+            await this.initializePuppeteer();
+            await this.page.goto(url);
+            await this.page.waitFor(this.timeWaitStart);
 
             if (await this.anyResultsFound()) {
                 let numberOfEntries;
