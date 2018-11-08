@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/HugoJBello/puppeteer-datascraping-airbnb#readme",
   "dependencies": {
+    "dotenv": "^6.1.0",
     "modern-random-ua": "^1.0.3",
     "mongodb": "^3.1.8",
     "puppeteer": "^1.10.0"
