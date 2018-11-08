@@ -8,8 +8,8 @@ module.exports = class ScraperPuppeteerFotocasa {
         require('dotenv').load();
         this.browser = null;
         this.page = null;
-        this.timeWaitStart = 3 * 1000;
-        this.timeWaitClick = 1000;
+        this.timeWaitStart = 1 * 1000;
+        this.timeWaitClick = 500;
         this.mongoUrl = process.env['MONGO_URL'];
         this.retries = 3;
         this.separatedFeatures = require("./data/separatedFeatures/separatedFeatures.json");
