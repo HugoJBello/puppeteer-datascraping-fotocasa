@@ -30,7 +30,7 @@ module.exports = class ScraperPuppeteerFotocasa {
         //this.resetIndex();
         for (let nmun in this.separatedFeatures) {
             console.log("-----------------------\n Scraping data from " + nmun + "\n-----------------------");
-            let municipioResults = this.initializeMunicipio(nmun);
+            let municipioResults = await this.initializeMunicipio(nmun);
             for (let cusecName in this.separatedFeatures[nmun]) {
                 console.log("\n------->" + cusecName)
                 this.initializeConfigAndIndex();
@@ -146,7 +146,7 @@ module.exports = class ScraperPuppeteerFotocasa {
                 }
 
                 let averagePrize = this.calculateAverage(adData);
-                let numberOfAds = addData.length;
+                let numberOfAds = adData.length;
 
                 console.log(adData);
                 console.log("------> " + averagePrize);
