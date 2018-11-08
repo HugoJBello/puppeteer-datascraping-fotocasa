@@ -149,19 +149,18 @@ module.exports = class ScraperPuppeteerFotocasa {
                 console.log(adData);
                 console.log("------> " + averagePrize);
 
+                await this.page.screenshot({ path: 'example.png' });
+                await this.browser.close();
                 return { date: new Date(), number_of_ads: numberOfAds, average_prize: averagePrize, ads_info: adData };
 
 
             }
 
-
+        } catch (err) {
+            console.log(err);
             await this.page.screenshot({ path: 'example.png' });
             await this.browser.close();
 
-
-
-        } catch (err) {
-            console.log(err);
             return undefined;
         }
     }
