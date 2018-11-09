@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 *.html
 example.png
+scrapingIndex.json
 
 # Runtime data
 pids

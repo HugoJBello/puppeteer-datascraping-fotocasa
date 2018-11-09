@@ -35,12 +35,16 @@ module.exports = class ScraperPuppeteerFotocasa {
                 console.log("\n------->" + cusecName)
                 this.initializeConfigAndIndex();
                 if (!this.scrapingIndex[nmun][cusecName]) {
-                    let cusecFeature = this.separatedFeatures[nmun][cusecName];
-                    const cusecData = await this.extractFromCusec(cusecFeature);
-                    municipioResults.cusecs[cusecName] = cusecData;
+                    try {
+                        let cusecFeature = this.separatedFeatures[nmun][cusecName];
+                        const cusecData = await this.extractFromCusec(cusecFeature);
+                        municipioResults.cusecs[cusecName] = cusecData;
 
-                    this.updateIndex(cusecName, nmun);
-                    await this.saveData(municipioResults, nmun);
+                        this.updateIndex(cusecName, nmun);
+                        await this.saveData(municipioResults, nmun);
+                    } catch (err) {
+                        console.log(err);
+                    }
                 }
             }
         }
@@ -135,9 +139,14 @@ module.exports = class ScraperPuppeteerFotocasa {
                 let pageNum = 1;
                 while (isNextPage) {
                     console.log("-->scraping page " + pageNum);
-                    const pageData = await this.extractPageData();
+                    try {
+                        const pageData = await this.extractPageData();
+                        adData.push(...pageData);
+                    } catch (err) {
+                        console.log("error obtaining data for page");
+                        console.log(err);
+                    }
 
-                    adData.push(...pageData);
                     //console.log("found " + numberOfEntries + " entries in this page");
                     isNextPage = await this.goToNextPage();
                     pageNum = pageNum + 1;
@@ -298,6 +307,10 @@ module.exports = class ScraperPuppeteerFotocasa {
     async saveDataInMongo(municipioResults, nmun, cusecName) {
         const scrapingId = this.config.sessionId
         await this.MongoClient.connect(this.mongoUrl, function (err, client) {
+            if (err) {
+                console.log(err);
+                throw err;
+            }
             const db = "fotocasa-db";
             const collectionName = "summaries-fotocasa-scraping";
             console.log("saving data in mongodb");
@@ -318,13 +331,24 @@ module.exports = class ScraperPuppeteerFotocasa {
         const scrapingId = this.config.sessionId
         const url = this.mongoUrl;
         await this.MongoClient.connect(url, function (err, client) {
-            const dbIndex = "index-fotocasa-db";
-            const collectionNameIndex = "state-execution-fotocasa-scraping";
-            console.log("updating log in mongodb");
-            const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastCusec: cusecName }
-            const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
-            collectionIndex.save(executionDataLogIndex);
-            client.close();
+            if (err) {
+                console.log(err);
+                throw err;
+            }
+            try {
+                const dbIndex = "index-fotocasa-db";
+                const collectionNameIndex = "state-execution-fotocasa-scraping";
+                console.log("updating log in mongodb");
+                const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastCusec: cusecName }
+                const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
+                collectionIndex.save(executionDataLogIndex);
+                client.close();
+            } catch (err) {
+                console.log(err);
+                console.log("error saving in mongo");
+                throw err
+            }
+
         });
     }
     saveDataAsCSV(municipioResults, nmun) {
@@ -334,8 +358,14 @@ module.exports = class ScraperPuppeteerFotocasa {
     }
 
     updateIndex(cusecName, nmun) {
-        this.scrapingIndex[nmun][cusecName] = true;
-        fs.writeFileSync(this.scrapingIndexPath, JSON.stringify(this.scrapingIndex));
+        try {
+            this.scrapingIndex[nmun][cusecName] = true;
+            fs.writeFileSync(this.scrapingIndexPath, JSON.stringify(this.scrapingIndex));
+        } catch (err) {
+            console.log("error saving index");
+            console.log(err);
+            throw err;
+        }
     }
 
     async resetIndexAndFinalize() {
