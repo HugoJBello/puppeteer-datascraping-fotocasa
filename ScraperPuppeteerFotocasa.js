@@ -165,16 +165,16 @@ module.exports = class ScraperPuppeteerFotocasa {
         }
     }
 
-    async initalizePuppeteer() {
-        if (process.env['RASPBERRY_MODE']) {
-            this.browser = await Apify.launchPuppeteer({
+    async initializePuppeteer() {
+        if (process.env['RASPBERRY_MODE'] == true) {
+            this.browser = await puppeteer.launch({
                 executablePath: '/usr/bin/chromium-browser',
                 userAgent: randomUA.generate(),
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']
             });
         } else {
-            this.browser = await Apify.launchPuppeteer({
+            this.browser = await puppeteer.launch({
                 userAgent: randomUA.generate(),
                 headless: true,
                 args: ['--no-sandbox']
