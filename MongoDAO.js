@@ -1,6 +1,6 @@
 this.MongoClient = require('mongodb').MongoClient;
 
-module.exports = class MongoSaver {
+module.exports = class MongoDAO {
     constructor(mongoUrl, appId, config) {
         this.mongoUrl = mongoUrl,
             this.appId = appId,

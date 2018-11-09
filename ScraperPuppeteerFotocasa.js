@@ -3,7 +3,7 @@ const randomUA = require('modern-random-ua');
 const fs = require('fs');
 const FeatureProcessor = require('./FeatureProcessor');
 
-const MongoSaver = require('./MongoSaver');
+const MongoSaver = require('./MongoDAO');
 require('dotenv').load();
 
 module.exports = class ScraperPuppeteerFotocasa {
@@ -37,21 +37,24 @@ module.exports = class ScraperPuppeteerFotocasa {
         await this.initializeConfigAndIndex();
         for (let nmun in this.separatedFeatures) {
             console.log("-----------------------\n Scraping data from " + nmun + "\n-----------------------");
-            let municipioResults = await this.initializeMunicipio(nmun);
-            for (let cusecName in this.separatedFeatures[nmun]) {
-                console.log("\n------->" + cusecName)
-                if (!this.scrapingIndex.municipios[nmun][cusecName]) {
-                    try {
-                        let cusecFeature = this.separatedFeatures[nmun][cusecName];
-                        const cusecData = await this.extractFromCusec(cusecFeature);
-                        municipioResults.cusecs[cusecName] = cusecData;
+            if (!this.scrapingIndex.municipios[nmun].scraped) {
+                let municipioResults = await this.initializeMunicipio(nmun);
+                for (let cusecName in this.separatedFeatures[nmun]) {
+                    console.log("\n------->" + cusecName)
+                    if (!this.scrapingIndex.municipios[nmun].cusecs[cusecName]) {
+                        try {
+                            let cusecFeature = this.separatedFeatures[nmun][cusecName];
+                            const cusecData = await this.extractFromCusec(cusecFeature);
+                            municipioResults.cusecs[cusecName] = cusecData;
 
-                        this.updateIndex(cusecName, nmun);
-                        await this.saveData(municipioResults, nmun);
-                    } catch (err) {
-                        console.log(err);
+                            this.updateIndex(cusecName, nmun);
+                            await this.saveData(municipioResults, nmun);
+                        } catch (err) {
+                            console.log(err);
+                        }
                     }
                 }
+                this.scrapingIndex.municipios[nmun].scraped = true;
             }
         }
 
@@ -126,6 +129,7 @@ module.exports = class ScraperPuppeteerFotocasa {
                 let adData = [];
                 let isNextPage = true;
                 let pageNum = 1;
+                let pageLimit = this.config.pageLimit;
                 while (isNextPage) {
                     console.log("-->scraping page " + pageNum);
                     try {
@@ -137,7 +141,7 @@ module.exports = class ScraperPuppeteerFotocasa {
                     }
 
                     //console.log("found " + numberOfEntries + " entries in this page");
-                    isNextPage = await this.goToNextPage();
+                    isNextPage = (await this.goToNextPage() && (pageNum < pageLimit));
                     pageNum = pageNum + 1;
                 }
 
@@ -302,7 +306,7 @@ module.exports = class ScraperPuppeteerFotocasa {
 
     updateIndex(cusecName, nmun) {
         try {
-            this.scrapingIndex.municipios[nmun][cusecName] = true;
+            this.scrapingIndex.municipios[nmun].cusecs[cusecName] = true;
             fs.writeFileSync(this.scrapingIndexPath, JSON.stringify(this.scrapingIndex));
         } catch (err) {
             console.log("error saving index");

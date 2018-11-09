@@ -38,12 +38,12 @@ module.exports = class FeatureProcessor {
                 let procFeature = this.processFeature(feature);
                 if (feature.properties["NMUN"] in this.foundFeatures) {
                     this.foundFeatures[feature.properties["NMUN"]][procFeature.cusec] = procFeature;
-                    this.scrapingIndex.municipios[feature.properties["NMUN"]][procFeature.cusec] = false;
+                    this.scrapingIndex.municipios[feature.properties["NMUN"]].cusecs[procFeature.cusec] = false;
                 } else {
                     this.foundFeatures[feature.properties["NMUN"]] = {};
-                    this.scrapingIndex.municipios[feature.properties["NMUN"]] = {};
+                    this.scrapingIndex.municipios[feature.properties["NMUN"]] = { scraped: false, cusecs: {} };
                     this.foundFeatures[feature.properties["NMUN"]][procFeature.cusec] = procFeature;
-                    this.scrapingIndex.municipios[feature.properties["NMUN"]][procFeature.cusec] = false;
+                    this.scrapingIndex.municipios[feature.properties["NMUN"]].cusecs[procFeature.cusec] = false;
 
                 }
             }
