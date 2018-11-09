@@ -166,7 +166,7 @@ module.exports = class ScraperPuppeteerFotocasa {
     }
 
     async initializePuppeteer() {
-        if (process.env['RASPBERRY_MODE'] == true) {
+        if (process.env['RASPBERRY_MODE']) {
             this.browser = await puppeteer.launch({
                 executablePath: '/usr/bin/chromium-browser',
                 userAgent: randomUA.generate(),
