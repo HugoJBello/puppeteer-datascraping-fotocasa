@@ -91,8 +91,9 @@ module.exports = class ScraperPuppeteerFotocasa {
                 this.featureProcessor.processAllFeaturesAndCreateIndex();
                 this.scrapingIndex = this.featureProcessor.scrapingIndex;
             }
+        } else {
+            this.scrapingIndex = require("./data/separatedFeatures/scrapingIndex.json");
         }
-        this.scrapingIndex = require("./data/separatedFeatures/scrapingIndex.json");
         this.tmpDirSession = "data/tmp/" + this.config.sessionId;
     }
 
