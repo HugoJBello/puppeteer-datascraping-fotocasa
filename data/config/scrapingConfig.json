@@ -1,6 +1,7 @@
 {
     "sessionId": "scraping-fotocasa---2018-11-4_12_23_50",
     "useMongoDb": true,
+    "executionPrefix": "raspberry",
     "db": "realstate-db",
     "collection": "summaries"
 }

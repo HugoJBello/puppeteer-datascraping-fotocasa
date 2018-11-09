@@ -69,7 +69,7 @@ module.exports = class ScraperPuppeteerFotocasa {
     }
 
     getNewMunicipio(nmun) {
-        return { _id: nmun + "---" + this.config.sessionId, nmun: nmun, scrapingId: this.config.sessionId, date: this.date, cusecs: {} }
+        return { _id: nmun + "---" + this.config.sessionId, nmun: nmun, scrapingId: this.config.sessionId, date: new Date(), cusecs: {} }
     }
 
     async getMunicipioFromMongo(nmun) {
@@ -344,7 +344,7 @@ module.exports = class ScraperPuppeteerFotocasa {
         featureProcessor.processAllFeaturesAndCreateIndex();
         this.date = new Date().toLocaleString().replace(/:/g, '_').replace(/ /g, '_').replace(/\//g, '_');
         if (this.config.saveDataInMongo) await this.updateStateExecMongo("none", "none", false);
-        this.config.sessionId = "scraping-fotocasa--" + this.date;
+        this.config.sessionId = "scraping-fotocasa-" + this.config.executionPrefix + "--" + this.date;
         fs.writeFileSync("./data/config/scrapingConfig.json", JSON.stringify(this.config));
     }
 
