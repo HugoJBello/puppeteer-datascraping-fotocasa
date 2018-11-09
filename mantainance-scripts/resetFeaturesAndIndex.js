@@ -1,4 +1,4 @@
 const FeatureProcessor = require('../FeatureProcessor')
-
-const filterer = new FeatureProcessor("../data/", "../data/separatedFeatures/");
+const config = require("../data/config/scrapingConfig.json")
+const filterer = new FeatureProcessor("../data/", "../data/separatedFeatures/", config.sessionId);
 filterer.processAllFeaturesAndCreateIndex();

@@ -3,7 +3,7 @@ const fs = require('fs');
 
 
 module.exports = class FeatureProcessor {
-    constructor(mapDir = "./data/", outputDir = "./data/separatedFeatures/") {
+    constructor(mapDir = "./data/", outputDir = "./data/separatedFeatures/", sessionId = "id") {
         this.nMuns = ["Madrid", "Móstoles", "Alcalá de Henares",
             "Fuenlabrada", "Leganés", "Getafe",
             "Alcorcón", "Torrejón de Ardoz", "Parla", "Alcobendas",
@@ -15,7 +15,7 @@ module.exports = class FeatureProcessor {
             "Villaviciosa de Odón", "Navalcarnero", "Ciempozuelos", "Torrelodones",
             "Paracuellos de Jarama", "Mejorada del Campo", "Algete"]
         this.foundFeatures = {};
-        this.scrapingIndex = {};
+        this.scrapingIndex = { "_id": sessionId, municipios: {} };
         this.fileContents = fs.readFileSync(mapDir + "SECC_CPV_E_20111101_01_R_INE_MADRID_cs_epsg.geojson.json", 'utf8');
         this.geoJson = JSON.parse(this.fileContents);
 
@@ -36,12 +36,12 @@ module.exports = class FeatureProcessor {
                 let procFeature = this.processFeature(feature);
                 if (feature.properties["NMUN"] in this.foundFeatures) {
                     this.foundFeatures[feature.properties["NMUN"]][procFeature.cusec] = procFeature;
-                    this.scrapingIndex[feature.properties["NMUN"]][procFeature.cusec] = false;
+                    this.scrapingIndex.municipios[feature.properties["NMUN"]][procFeature.cusec] = false;
                 } else {
                     this.foundFeatures[feature.properties["NMUN"]] = {};
-                    this.scrapingIndex[feature.properties["NMUN"]] = {};
+                    this.scrapingIndex.municipios[feature.properties["NMUN"]] = {};
                     this.foundFeatures[feature.properties["NMUN"]][procFeature.cusec] = procFeature;
-                    this.scrapingIndex[feature.properties["NMUN"]][procFeature.cusec] = false;
+                    this.scrapingIndex.municipios[feature.properties["NMUN"]][procFeature.cusec] = false;
 
                 }
             }

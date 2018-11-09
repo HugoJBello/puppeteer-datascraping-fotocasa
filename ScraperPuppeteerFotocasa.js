@@ -1,6 +1,9 @@
 const puppeteer = require('puppeteer');
 const randomUA = require('modern-random-ua');
 const fs = require('fs');
+const FeatureProcessor = require('./FeatureProcessor');
+
+const MongoSaver = require('./MongoSaver');
 require('dotenv').load();
 
 module.exports = class ScraperPuppeteerFotocasa {
@@ -14,8 +17,10 @@ module.exports = class ScraperPuppeteerFotocasa {
         this.retries = 3;
         this.separatedFeatures = require("./data/separatedFeatures/separatedFeatures.json");
         this.config = require("./data/config/scrapingConfig.json");
-        this.MongoClient = require('mongodb').MongoClient;
+        this.featureProcessor = new FeatureProcessor();
 
+        this.appId = "fotocasa";
+        this.mongoSaver = new MongoSaver(this.mongoUrl, this.appId, this.config);
         this.scrapingIndexPath = "./data/separatedFeatures/scrapingIndex.json";
         this.scrapingIndex = require(this.scrapingIndexPath);
         this.tmpDir = "data/tmp/"
@@ -28,13 +33,13 @@ module.exports = class ScraperPuppeteerFotocasa {
     async main() {
         console.log("starting app");
         //this.resetIndex();
+        await this.initializeConfigAndIndex();
         for (let nmun in this.separatedFeatures) {
             console.log("-----------------------\n Scraping data from " + nmun + "\n-----------------------");
             let municipioResults = await this.initializeMunicipio(nmun);
             for (let cusecName in this.separatedFeatures[nmun]) {
                 console.log("\n------->" + cusecName)
-                this.initializeConfigAndIndex();
-                if (!this.scrapingIndex[nmun][cusecName]) {
+                if (!this.scrapingIndex.municipios[nmun][cusecName]) {
                     try {
                         let cusecFeature = this.separatedFeatures[nmun][cusecName];
                         const cusecData = await this.extractFromCusec(cusecFeature);
@@ -57,7 +62,7 @@ module.exports = class ScraperPuppeteerFotocasa {
             fs.mkdirSync("./" + this.tmpDirSession);
         }
         if (this.config.useMongoDb) {
-            let municipio = await this.getMunicipioFromMongo(nmun);
+            let municipio = await this.mongoSaver.getMunicipioFromMongo(nmun);
             if (!municipio) {
                 municipio = this.getNewMunicipio(nmun);
             }
@@ -76,39 +81,21 @@ module.exports = class ScraperPuppeteerFotocasa {
         return { _id: nmun + "---" + this.config.sessionId, nmun: nmun, scrapingId: this.config.sessionId, date: new Date(), cusecs: {} }
     }
 
-    async getMunicipioFromMongo(nmun) {
-        const self = this;
-        const url = this.mongoUrl;
-        const scrapingId = this.config.sessionId;
-        return new Promise((resolve, reject) => {
-            self.MongoClient.connect(url, function (err, client) {
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }
-                const dbName = "airbnb-db";
-                const collectionName = "summaries-airbnb-scraping";
-                console.log("geting from mongo");
-                const collection = client.db(dbName).collection(collectionName);
-                const _id = nmun + "---" + scrapingId;
-                console.log(_id);
-                collection.findOne({ _id }, (err, result) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    console.log(result);
-                    resolve(result);
-                });
-                client.close();
-            });
-        });
-    }
 
-    initializeConfigAndIndex() {
+    async initializeConfigAndIndex() {
         this.config = require("./data/config/scrapingConfig.json");
+        if (this.config.useMongoDb) {
+            this.scrapingIndex = await this.mongoSaver.getIndexFromMongo();
+            if (!this.scrapingIndex) {
+                console.log("------\n initializing index");
+                this.featureProcessor.processAllFeaturesAndCreateIndex();
+                this.scrapingIndex = this.featureProcessor.scrapingIndex;
+            }
+        }
         this.scrapingIndex = require("./data/separatedFeatures/scrapingIndex.json");
         this.tmpDirSession = "data/tmp/" + this.config.sessionId;
     }
+
 
     async extractFromCusec(cusecFeature) {
         try {
@@ -299,58 +286,12 @@ module.exports = class ScraperPuppeteerFotocasa {
         let nmunPath = this.tmpDirSession + "/" + nmun + "---" + this.config.sessionId + ".json";
         fs.writeFileSync(nmunPath, JSON.stringify(municipioResults));
         if (this.config.useMongoDb) {
-            await this.saveDataInMongo(municipioResults, nmun, cusecName);
+            await this.mongoSaver.saveDataInMongo(municipioResults, nmun, cusecName, this.scrapingIndex);
             // await this.updateStateExecMongo(municipioResults.cusec, nmun, true);
         }
     }
 
-    async saveDataInMongo(municipioResults, nmun, cusecName) {
-        const scrapingId = this.config.sessionId
-        await this.MongoClient.connect(this.mongoUrl, function (err, client) {
-            if (err) {
-                console.log(err);
-                throw err;
-            }
-            const db = "fotocasa-db";
-            const collectionName = "summaries-fotocasa-scraping";
-            console.log("saving data in mongodb");
-            const collection = client.db(db).collection(collectionName);
-            collection.save(municipioResults);
 
-            const dbIndex = "fotocasa-db";
-            const collectionNameIndex = "state-execution-fotocasa-scraping";
-            console.log("updating log in mongodb");
-            const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: true, lastNmun: nmun, lastCusec: cusecName }
-            const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
-            collectionIndex.save(executionDataLogIndex);
-            client.close();
-        });
-    }
-
-    async updateStateExecMongo(cusecName, nmun, active) {
-        const scrapingId = this.config.sessionId
-        const url = this.mongoUrl;
-        await this.MongoClient.connect(url, function (err, client) {
-            if (err) {
-                console.log(err);
-                throw err;
-            }
-            try {
-                const dbIndex = "index-fotocasa-db";
-                const collectionNameIndex = "state-execution-fotocasa-scraping";
-                console.log("updating log in mongodb");
-                const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastCusec: cusecName }
-                const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
-                collectionIndex.save(executionDataLogIndex);
-                client.close();
-            } catch (err) {
-                console.log(err);
-                console.log("error saving in mongo");
-                throw err
-            }
-
-        });
-    }
     saveDataAsCSV(municipioResults, nmun) {
         let nmunPath = this.tmpDirSession + "/" + nmun + "---" + this.config.sessionId + ".csv";
         const header = "CUSEC;NMUN;N_ANUN;P_MEDIO;FECHA\n"
@@ -359,7 +300,7 @@ module.exports = class ScraperPuppeteerFotocasa {
 
     updateIndex(cusecName, nmun) {
         try {
-            this.scrapingIndex[nmun][cusecName] = true;
+            this.scrapingIndex.municipios[nmun][cusecName] = true;
             fs.writeFileSync(this.scrapingIndexPath, JSON.stringify(this.scrapingIndex));
         } catch (err) {
             console.log("error saving index");
@@ -369,11 +310,9 @@ module.exports = class ScraperPuppeteerFotocasa {
     }
 
     async resetIndexAndFinalize() {
-        const FeatureProcessor = require('./FeatureProcessor');
-        const featureProcessor = new FeatureProcessor();
-        featureProcessor.processAllFeaturesAndCreateIndex();
+        this.featureProcessor.processAllFeaturesAndCreateIndex();
         this.date = new Date().toLocaleString().replace(/:/g, '_').replace(/ /g, '_').replace(/\//g, '_');
-        if (this.config.saveDataInMongo) await this.updateStateExecMongo("none", "none", false);
+        if (this.config.useMongoDb) await this.mongoSaver.updateStateExecMongo("none", "none", false);
         this.config.sessionId = "scraping-fotocasa-" + this.config.executionPrefix + "--" + this.date;
         fs.writeFileSync("./data/config/scrapingConfig.json", JSON.stringify(this.config));
     }
