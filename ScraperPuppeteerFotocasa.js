@@ -18,6 +18,7 @@ module.exports = class ScraperPuppeteerFotocasa {
         this.separatedFeatures = require("./data/separatedFeatures/separatedFeatures.json");
         this.config = require("./data/config/scrapingConfig.json");
         this.featureProcessor = new FeatureProcessor();
+        this.featureProcessor.sessionId = this.config.sessionId;
 
         this.appId = "fotocasa";
         this.mongoSaver = new MongoSaver(this.mongoUrl, this.appId, this.config);

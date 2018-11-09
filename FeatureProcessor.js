@@ -15,7 +15,7 @@ module.exports = class FeatureProcessor {
             "Villaviciosa de Odón", "Navalcarnero", "Ciempozuelos", "Torrelodones",
             "Paracuellos de Jarama", "Mejorada del Campo", "Algete"]
         this.foundFeatures = {};
-        this.scrapingIndex = { "_id": sessionId, municipios: {} };
+        this.sessionId = sessionId;
         this.fileContents = fs.readFileSync(mapDir + "SECC_CPV_E_20111101_01_R_INE_MADRID_cs_epsg.geojson.json", 'utf8');
         this.geoJson = JSON.parse(this.fileContents);
 
@@ -31,6 +31,8 @@ module.exports = class FeatureProcessor {
     }
 
     generateProcessedFeaturesAndIndex() {
+        this.scrapingIndex = { "_id": this.sessionId, municipios: {} };
+
         for (let feature of this.geoJson["features"]) {
             if (this.nMuns.includes(feature.properties["NMUN"])) {
                 let procFeature = this.processFeature(feature);
