@@ -4,7 +4,6 @@ const fs = require('fs');
 const FeatureProcessor = require('./FeatureProcessor');
 
 const MongoSaver = require('./MongoDAO');
-require('dotenv').load();
 
 module.exports = class ScraperPuppeteerFotocasa {
     constructor() {
