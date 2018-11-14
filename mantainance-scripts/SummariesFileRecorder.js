@@ -42,7 +42,8 @@ module.exports = class SummariesFileRecorder {
                     const filenameJson = tmpDirName + "/" + item._id + ".json";
                     fs.writeFileSync(filenameJson, JSON.stringify(item));
 
-                    const filenameCsv = tmpDirName + "/" + item._id + ".csv";
+                    let filenameCsv = tmpDirName + "/" + item._id + ".csv";
+                    filenameCsv.replace(",", "");
                     const asCsv = convertToCsvString(item);
                     fs.writeFileSync(filenameCsv, asCsv);
                 } else {
@@ -57,7 +58,7 @@ module.exports = class SummariesFileRecorder {
     }
 
     convertToCsvString(jsonFile) {
-        const header = "CUSEC; NMUN; V_VENTA; N_VENTA; FECHA";
+        const header = "CUSEC;NMUN;V_VENTA;N_VENTA;FECHA";
         let outputText = header;
 
         const nmun = jsonFile.nmun;
