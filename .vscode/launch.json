@@ -7,6 +7,12 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "getAll",
+            "program": "${workspaceFolder}/mantainance-scripts/getAllSummariesFromId.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Iniciar programa",
             "program": "${workspaceFolder}\\index.js"
         }

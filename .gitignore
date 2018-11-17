@@ -3,6 +3,10 @@ delete/
 delete
 */delete/
 */delete/*
+shapefiles-maps/
+shapefiles-maps/*
+*/shapefiles-maps/*
+
 
 # Logs
 logs
