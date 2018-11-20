@@ -44,7 +44,7 @@ module.exports = class ScraperPuppeteerFotocasa {
                             municipioResults.cusecs[cusecName] = cusecData;
 
                             this.updateIndex(cusecName, nmun);
-                            await this.saveData(municipioResults, nmun);
+                            await this.saveData(municipioResults, nmun, cusecName);
                         } catch (err) {
                             console.log(err);
                         }
