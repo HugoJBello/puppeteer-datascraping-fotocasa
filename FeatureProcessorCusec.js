@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 
-module.exports = class FeatureProcessor {
+module.exports = class FeatureProcessorCusec {
     constructor(mapDir = "./data/", outputDir = "./data/separatedFeatures/", sessionId = "id") {
         this.nMuns = ["Madrid", "Móstoles", "Alcalá de Henares",
             "Fuenlabrada", "Leganés", "Getafe",

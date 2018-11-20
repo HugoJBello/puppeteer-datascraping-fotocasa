@@ -1,7 +1,1 @@
-{
-    "sessionId": "scraping-fotocasa-raspberry--2018-11-14_13_47_34",
-    "useMongoDb": true,
-    "appId": "fotocasa",
-    "executionPrefix": "raspberry",
-    "pageLimit": 300
-}
+{"sessionId":"scraping-fotocasa-raspberry--2018-11-20_17_16_56","useMongoDb":true,"appId":"fotocasa","executionPrefix":"raspberry","pageLimit":300}

@@ -1,6 +1,6 @@
 
 const fs = require('fs');
-const FeatureProcessor = require('./FeatureProcessor');
+const FeatureProcessorCusec = require('./FeatureProcessorCusec');
 const BoxScraper = require('./FotocasaBoxScraper');
 const MongoSaver = require('./MongoDAO');
 
@@ -12,7 +12,7 @@ module.exports = class ScraperPuppeteerFotocasa {
         this.retries = 3;
         this.separatedFeatures = require("./data/separatedFeatures/separatedFeatures.json");
         this.config = require("./data/config/scrapingConfig.json");
-        this.featureProcessor = new FeatureProcessor();
+        this.featureProcessor = new FeatureProcessorCusec();
         this.featureProcessor.sessionId = this.config.sessionId;
 
         this.boxScraper = new BoxScraper();
