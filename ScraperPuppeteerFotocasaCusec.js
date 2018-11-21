@@ -100,15 +100,16 @@ module.exports = class ScraperPuppeteerFotocasaCusec {
 
     async extractFromCusec(cusecFeature) {
         try {
-
-            let index = require("./data/separatedFeatures/scrapingIndex.json");
-            const nmun = cusecFeature.nmun;
-            const cusec = cusecFeature.cusec;
             const boundingBox = cusecFeature.boundingBox;
             const centerPoint = cusecFeature.centerPoint;
 
-            const boxScraperResults = await this.boxScraper.extractDataFromBox(boundingBox, centerPoint);
-            return { date: new Date(), number_of_ads: boxScraperResults.numberOfAds, average_prize: boxScraperResults.averagePrize, ads_info: boxScraperResults.adData };
+            const boxScraperResultsBuy = await this.boxScraper.extractDataFromBox(boundingBox, centerPoint, "comprar");
+            const dataBuy = { number_of_ads: boxScraperResultsBuy.numberOfAds, average_prize: boxScraperResultsBuy.averagePrize, ads_info: boxScraperResultsBuy.adData }
+
+            const boxScraperResultsRent = await this.boxScraper.extractDataFromBox(boundingBox, centerPoint, "alquiler");
+            const dataRent = { number_of_ads: boxScraperResultsRent.numberOfAds, average_prize: boxScraperResultsRent.averagePrize, ads_info: boxScraperResultsRent.adData }
+
+            return { date: new Date(), dataBuy, dataRent };
 
         } catch (err) {
             console.log(err);
