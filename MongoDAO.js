@@ -70,6 +70,7 @@ module.exports = class MongoDAO {
         const scrapingId = this.config.sessionId;
         const index = scrapingIndex;
         const appId = this.appId;
+        const self = this;
         await this.MongoClient.connect(this.mongoUrl, function (err, client) {
             if (err) {
                 console.log(err);
@@ -82,8 +83,8 @@ module.exports = class MongoDAO {
             collection.save(municipioResults);
 
             const collectionNameStatus = "state-execution-" + appId + "-scraping";
-            console.log("updating log in mongodb");
-            const executionDataLogStatus = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: true, lastNmun: nmun, lastCusec: cusecName }
+            console.log("updating state execution in mongodb");
+            const executionDataLogStatus = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: true, lastNmun: nmun, lastCusec: cusecName, config: self.config }
             const collectionStatus = client.db(db).collection(collectionNameStatus);
             collectionStatus.save(executionDataLogStatus);
 
