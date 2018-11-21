@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha" 
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/HugoJBello/puppeteer-datascraping-airbnb#readme",
   "dependencies": {
     "chai": "^4.2.0",
+    "chai-almost": "^1.0.1",
     "dotenv": "^6.1.0",
     "mocha": "^5.2.0",
     "modern-random-ua": "^1.0.3",

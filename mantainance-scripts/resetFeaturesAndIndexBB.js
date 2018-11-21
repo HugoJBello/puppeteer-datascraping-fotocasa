@@ -1,4 +1,4 @@
 const FeatureProcessor = require('../FeatureProcessorCityBoundingBox')
 const config = require("../data/config/scrapingConfig.json")
 const filterer = new FeatureProcessor("../data/", "../data/separatedFeatures/", config.sessionId);
-filterer.processAllFeaturesAndCreateIndex();
+(async () => await filterer.processAllFeaturesAndCreateIndex())();

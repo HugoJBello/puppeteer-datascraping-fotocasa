@@ -12,9 +12,9 @@ module.exports = class FocotasaBoxScraper {
         this.timeWaitClick = 500;
     }
 
-    async extractDataFromBox(boundingBox, centerPoint) {
-
-        const url = `https://www.fotocasa.es/es/comprar/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=${boundingBox[0][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[1][1]};&latitudeCenter=${centerPoint[1]}&longitudeCenter=${centerPoint[0]}&zoom=16`
+    async extractDataFromBox(boundingBox, centerPoint, type = "comprar") {
+        //type can be comprar o alquiler
+        const url = `https://www.fotocasa.es/es/${type}/casas/espana/tu-zona-de-busqueda/l?latitude=40&longitude=-4&combinedLocationIds=724,0,0,0,0,0,0,0,0&gridType=list&mapBoundingBox=${boundingBox[0][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[0][1]};${boundingBox[1][0]},${boundingBox[1][1]};${boundingBox[0][0]},${boundingBox[1][1]};&latitudeCenter=${centerPoint[1]}&longitudeCenter=${centerPoint[0]}&zoom=16`
 
         console.log("\n---");
         console.log(url);

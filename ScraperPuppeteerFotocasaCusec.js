@@ -4,7 +4,7 @@ const FeatureProcessorCusec = require('./FeatureProcessorCusec');
 const BoxScraper = require('./FotocasaBoxScraper');
 const MongoSaver = require('./MongoDAO');
 
-module.exports = class ScraperPuppeteerFotocasa {
+module.exports = class ScraperPuppeteerFotocasaCusec {
     constructor() {
         require('dotenv').load();
 

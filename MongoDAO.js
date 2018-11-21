@@ -117,14 +117,15 @@ module.exports = class MongoDAO {
     async updateStateExecMongo(cusecName, nmun, active) {
         const scrapingId = this.config.sessionId
         const url = this.mongoUrl;
+        const appId = this.appId
         await this.MongoClient.connect(url, function (err, client) {
             if (err) {
                 console.log(err);
                 throw err;
             }
             try {
-                const dbIndex = "index-" + this.appId + "-db";
-                const collectionNameIndex = "state-execution-" + this.appId + "-scraping";
+                const dbIndex = "index-" + appId + "-db";
+                const collectionNameIndex = "state-execution-" + appId + "-scraping";
                 console.log("updating log in mongodb");
                 const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastCusec: cusecName }
                 const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
