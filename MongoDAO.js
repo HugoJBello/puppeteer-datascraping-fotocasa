@@ -84,7 +84,7 @@ module.exports = class MongoDAO {
 
             const collectionNameStatus = "state-execution-" + appId + "-scraping";
             console.log("updating state execution in mongodb");
-            const executionDataLogStatus = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: true, lastNmun: nmun, lastCusec: cusecName, config: self.config }
+            const executionDataLogStatus = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: true, lastNmun: nmun, lastPart: cusecName, config: self.config }
             const collectionStatus = client.db(db).collection(collectionNameStatus);
             collectionStatus.save(executionDataLogStatus);
 
