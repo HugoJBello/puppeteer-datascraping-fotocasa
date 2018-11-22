@@ -8,7 +8,7 @@ module.exports = class FocotasaBoxScraper {
         this.page = null;
         this.config = require("./data/config/scrapingConfig.json");
 
-        this.timeWaitStart = 3 * 1000;
+        this.timeWaitStart = 1 * 1000;
         this.timeWaitClick = 500;
         require('dotenv').load();
 
