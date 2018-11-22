@@ -93,7 +93,7 @@ module.exports = class ScraperPuppeteerFotocasaCusec {
             this.scrapingIndex = await this.mongoSaver.getIndexFromMongo();
             if (!this.scrapingIndex) {
                 console.log("------\n initializing index");
-                await this.featureProcessor.processAllFeaturesAndCreateIndex();
+                await this.featureProcessor.processAllFeaturesAndCreateIndex(this.config.useSavedFeaturesInFile);
                 this.scrapingIndex = this.featureProcessor.scrapingIndex;
             }
         } else {

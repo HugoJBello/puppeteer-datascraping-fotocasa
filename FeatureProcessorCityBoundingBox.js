@@ -28,9 +28,13 @@ module.exports = class FeatureProcessorCusec {
         this.foundFeatures = null;
     }
 
-    async processAllFeaturesAndCreateIndex() {
-        await this.generateProcessedFeaturesAndIndex();
-        this.saveInFile();
+    async processAllFeaturesAndCreateIndex(generateOnlyIndex = false) {
+        if (generateOnlyIndex) {
+            await this.generateIndexFromFeatures();
+        } else {
+            await this.generateProcessedFeaturesAndIndex();
+            this.saveInFile();
+        }
         //console.log(this.foundFeatures);
     }
 
@@ -78,6 +82,20 @@ module.exports = class FeatureProcessorCusec {
 
     getCenterPoint(boundingBox) {
         return [(boundingBox[0][0] + boundingBox[1][0]) / 2, (boundingBox[0][1] + boundingBox[1][1]) / 2]
+    }
+
+    //simplifies the previous process, obtains only index.
+    generateIndexFromFeatures() {
+        this.foundFeatures = require(this.outputFilenameFeatures);
+        this.scrapingIndex = { "_id": this.sessionId, cities: {} };
+        for (const city in this.foundFeatures.cities) {
+            this.scrapingIndex.cities[city] = { scraped: false, pieces: {} }
+            for (const piece in this.foundFeatures.cities[city].pieces) {
+                this.scrapingIndex.cities[city].pieces[piece] = false;
+            }
+        }
+        fs.writeFileSync(this.outputFilenameIndex, JSON.stringify(this.scrapingIndex));
+
     }
 
     saveInFile() {

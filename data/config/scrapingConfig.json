@@ -1,8 +1,9 @@
 {
-    "sessionId": "scraping-fotocasa-testCC--2018-11-21_15_28_34",
+    "sessionId": "scraping-fotocasa-testEE--2018-11-21_15_28_34",
     "deviceId": "testBB",
     "useMongoDb": true,
     "appId": "fotocasa",
     "pageLimit": 300,
-    "method": "boundingBox"
+    "method": "boundingBox",
+    "useSavedFeaturesInFile": true
 }
