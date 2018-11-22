@@ -128,7 +128,7 @@ module.exports = class MongoDAO {
                 const dbIndex = "index-" + appId + "-db";
                 const collectionNameIndex = "state-execution-" + appId + "-scraping";
                 console.log("updating log in mongodb");
-                const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastCusec: cusecName }
+                const executionDataLogIndex = { "_id": scrapingId, scrapingId: scrapingId, date: new Date(), active: active, lastNmun: nmun, lastPart: cusecName }
                 const collectionIndex = client.db(dbIndex).collection(collectionNameIndex);
                 collectionIndex.save(executionDataLogIndex);
                 client.close();
