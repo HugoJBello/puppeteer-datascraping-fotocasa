@@ -151,7 +151,7 @@ module.exports = class ScraperPuppeteerFotocasaCusec {
         this.featureProcessor.processAllFeaturesAndCreateIndex();
         this.date = new Date().toLocaleString().replace(/:/g, '_').replace(/ /g, '_').replace(/\//g, '_');
         if (this.config.useMongoDb) await this.mongoSaver.updateStateExecMongo("none", "none", false);
-        this.config.sessionId = "scraping-fotocasa-" + this.config.executionPrefix + "--" + this.date;
+        this.config.sessionId = "scraping-fotocasa-" + this.config.deviceId + "--" + this.date;
         fs.writeFileSync("./data/config/scrapingConfig.json", JSON.stringify(this.config));
     }
 

@@ -3,7 +3,7 @@
     "deviceId": "testBB",
     "useMongoDb": true,
     "appId": "fotocasa",
-    "pageLimit": 300,
-    "method": "boundingBox",
+    "pageLimit": 12,
+    "method": "cusec",
     "useSavedFeaturesInFile": true
 }
