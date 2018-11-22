@@ -4,11 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "node",
             "request": "launch",
             "name": "getAll",
             "program": "${workspaceFolder}/mantainance-scripts/getAllSummariesFromId.js"
+        },
+        
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "reset",
+            "program": "${workspaceFolder}/mantainance-scripts/resetFeaturesAndIndexBB.js"
         },
         {
             "type": "node",

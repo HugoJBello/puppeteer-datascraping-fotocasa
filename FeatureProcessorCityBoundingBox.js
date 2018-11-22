@@ -44,15 +44,23 @@ module.exports = class FeatureProcessorCusec {
 
         for (const cityName of this.cities) {
             const boundingBox = await this.scraper.extractBoundingBoxFromCityName(cityName);
+            const boxSize = Math.min(parseFloat(-boundingBox[0][0]) + parseFloat(boundingBox[1][0]), parseFloat(boundingBox[0][1]) - parseFloat(boundingBox[1][1]));
+            console.log(boxSize);
+            let length = this.calculateNumberRows(boxSize)
+
             this.foundFeatures.cities[cityName] = { boundingBox: boundingBox, pieces: {} }
             this.scrapingIndex.cities[cityName] = { scraped: false, pieces: {} }
 
-            const length = 10;
+            length = 10;
             const boxCreationResult = this.popullateBoundingBoxWithPieces(boundingBox, length)
             this.foundFeatures.cities[cityName]["pieces"] = boxCreationResult.childrenSmallBoxes;
             this.scrapingIndex.cities[cityName]["pieces"] = boxCreationResult.childrenSmallBoxesNamesIndex;
         }
 
+    }
+
+    calculateNumberRows(boxSize) {
+        console.log(boxSize);
     }
 
     popullateBoundingBoxWithPieces(boundingBox, length) {
