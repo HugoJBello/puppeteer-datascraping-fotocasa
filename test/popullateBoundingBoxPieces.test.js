@@ -10,7 +10,7 @@ describe('App', function () {
         const featureProcessor = new FeatureProcessorCityBoundingBox();
         const boundingBoxTest = [['0', '1'], ['1', '0']]
 
-        const result = featureProcessor.popullateBoundingBoxWithPieces(boundingBoxTest, 3).childrenSmallBoxes;
+        const result = featureProcessor.popullateBoundingBoxWithPieces(boundingBoxTest, 1,1,3,4).childrenSmallBoxes;
 
         it('shoud be not null', function () {
             console.log("test box");

@@ -5,8 +5,8 @@ const ExtractBoundingBoxScraper = require('./ExtractBoundingBoxScraper')
 module.exports = class FeatureProcessorCusec {
     constructor(mapDir = "./data/", outputDir = "./data/separatedFeatures/", sessionId = "id") {
 
-        this.cities = ["Madrid", "Móstoles", "Alcalá de Henares",
-            "Fuenlabrada", "Leganés", "Getafe",
+        this.cities = ["Móstoles", "Alcalá de Henares",
+            "Fuenlabrada", "Leganés", "Madrid","Getafe",
             "Alcorcón", "Torrejón de Ardoz", "Parla", "Alcobendas",
             "Las Rozas de Madrid", "San Sebastián de los Reyes",
             "Pozuelo de Alarcón", "Coslada", "Rivas-Vaciamadrid",
@@ -24,7 +24,7 @@ module.exports = class FeatureProcessorCusec {
         this.scraper = new ExtractBoundingBoxScraper();
 
         this.maxSize = 0.005;
-        this.maxNumberRows = 30; // aprox Math.sqrt(1000);
+        this.maxNumberRows = 65; // aprox Math.sqrt(1000);
         this.minNumberRows = 4;
 
         this.scrapingIndex = null;
@@ -48,16 +48,23 @@ module.exports = class FeatureProcessorCusec {
         for (const cityName of this.cities) {
             const boundingBox = await this.scraper.extractBoundingBoxFromCityName(cityName);
             const boxSize = Math.min(parseFloat(-boundingBox[0][0]) + parseFloat(boundingBox[1][0]), parseFloat(boundingBox[0][1]) - parseFloat(boundingBox[1][1]));
+            
+            const distX = parseFloat(boundingBox[1][0]) - parseFloat(boundingBox[0][0]);
+            const distY = parseFloat(boundingBox[0][1]) - parseFloat(boundingBox[1][1]);
+
+            
             console.log(boxSize);
 
-            if ((boxSize) > 0) {
+            if ((distX) > 0) {
                 console.log("generating index and pieces");
-                let length = this.calculateNumberRows(boxSize)
+                let lengthX = this.calculateNumberRows(distX)
+                let lengthY = this.calculateNumberRows(distY)
+
 
                 this.foundFeatures.cities[cityName] = { boundingBox: boundingBox, pieces: {} }
                 this.scrapingIndex.cities[cityName] = { scraped: false, pieces: {} }
 
-                const boxCreationResult = this.popullateBoundingBoxWithPieces(boundingBox, length)
+                const boxCreationResult = this.popullateBoundingBoxWithPieces(boundingBox, distX, distY, lengthX,lengthY)
                 this.foundFeatures.cities[cityName]["pieces"] = boxCreationResult.childrenSmallBoxes;
                 this.scrapingIndex.cities[cityName]["pieces"] = boxCreationResult.childrenSmallBoxesNamesIndex;
             }
@@ -74,19 +81,17 @@ module.exports = class FeatureProcessorCusec {
         return result;
     }
 
-    popullateBoundingBoxWithPieces(boundingBox, length) {
+    popullateBoundingBoxWithPieces(boundingBox,distX, distY, lengthX, lengthY) {
         let childrenSmallBoxes = {}
         let childrenSmallBoxesNamesIndex = {}
-        const distX = parseFloat(boundingBox[1][0]) - parseFloat(boundingBox[0][0]);
-        const distY = parseFloat(boundingBox[0][1]) - parseFloat(boundingBox[1][1]);
+        
+        for (let i = 0; i < lengthX; i++) {
+            for (let j = 0; j < lengthY; j++) {
 
-        for (let i = 0; i < length; i++) {
-            for (let j = 0; j < length; j++) {
-
-                const newBox00 = parseFloat(boundingBox[0][0]) + (i / length) * distX;
-                const newBox01 = parseFloat(boundingBox[0][1]) - (j / length) * distY;
-                const newBox10 = newBox00 + (1 / length) * distX;
-                const newBox11 = newBox01 - (1 / length) * distY;
+                const newBox00 = parseFloat(boundingBox[0][0]) + (i / lengthX) * distX;
+                const newBox01 = parseFloat(boundingBox[0][1]) - (j / lengthY) * distY;
+                const newBox10 = newBox00 + (1 / lengthX) * distX;
+                const newBox11 = newBox01 - (1 / lengthY) * distY;
 
                 const box = [[newBox00, newBox01], [newBox10, newBox11]]
                 const pieceBoxId = "piece--" + i + "-" + j;
