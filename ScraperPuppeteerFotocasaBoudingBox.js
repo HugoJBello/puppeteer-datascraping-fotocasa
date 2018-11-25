@@ -4,7 +4,7 @@ const FeatureProcessorBoundingBox = require('./FeatureProcessorCityBoundingBox')
 const BoxScraper = require('./FotocasaBoxScraper');
 const MongoSaver = require('./MongoDAO');
 
-module.exports = class ScraperPuppeteerFotocasaCusec {
+module.exports = class ScraperPuppeteerFotocasaBoundingBox {
     constructor() {
         require('dotenv').load();
 

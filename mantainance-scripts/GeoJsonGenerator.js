@@ -39,7 +39,7 @@ module.exports = class GeoJsonGenerator {
         for (const piece in scrapingCityResult.pieces) {
             console.log(piece);
             const boundingBox = scrapingCityResult.pieces[piece].boundingBox;
-            const data = piece.data;
+            const data = scrapingCityResult.pieces[piece].data;
 
             const feature = this.generateFeature(boundingBox, data, piece);
             result.features.push(feature);
@@ -49,10 +49,16 @@ module.exports = class GeoJsonGenerator {
 
     generateFeature(boundingBox, data, piece) {
         const feature = {
-            type: "Feature", properties: { name: piece }, bbox: [], geometry: {
+            type: "Feature", properties: {}, bbox: [], geometry: {
                 type: "Polygon", coordinates: []
             }
         };
+        feature.properties = {name:piece, 
+            number_of_ads_buy: data.dataBuy.number_of_ads, 
+            average_prize_buy: data.dataBuy.average_prize,
+            number_of_ads_rent: data.dataRent.number_of_ads, 
+            average_prize_rent: data.dataRent.average_prize,
+            date:data.date};
 
         const bbox = [boundingBox[1][0], boundingBox[1][1], boundingBox[0][0], boundingBox[0][1]];
         const coordinates = [[[bbox[0], bbox[3]], [bbox[2], bbox[3]], [bbox[2], bbox[1]], [bbox[0], bbox[1]], [bbox[0], bbox[3]]]]
