@@ -2,7 +2,7 @@
 
 module.exports = class GeoJsonGeneratorFromResult {
     constructor() {
-
+        this.maxOpacity = 0.8;
     }
 
     generateGeoJsonFromResult(scrapingCityResult) {
@@ -55,15 +55,15 @@ module.exports = class GeoJsonGeneratorFromResult {
             }
         }
 
-        const maxOpacity = 0.8;
+
         if (modeOutput === "buy-prize") {
-            feature.properties["fill-opacity"] = feature.properties.normalized_prize_buy * maxOpacity;
+            feature.properties["fill-opacity"] = feature.properties.normalized_prize_buy * this.maxOpacity;
         } else if (modeOutput === "buy-ads") {
-            feature.properties["fill-opacity"] = feature.properties.normalized_ads_buy * maxOpacity;
+            feature.properties["fill-opacity"] = feature.properties.normalized_ads_buy * this.maxOpacity;
         } else if (modeOutput === "rent-prize") {
-            feature.properties["fill-opacity"] = feature.properties.normalized_prize_rent * maxOpacity;
+            feature.properties["fill-opacity"] = feature.properties.normalized_prize_rent * this.maxOpacity;
         } else {
-            feature.properties["fill-opacity"] = feature.properties.normalized_ads_rent * maxOpacity;
+            feature.properties["fill-opacity"] = feature.properties.normalized_ads_rent * this.maxOpacity;
         }
         feature.properties.fill = "#ff0000";
 
