@@ -37,10 +37,10 @@ module.exports = class GeoJsonGeneratorFromResult {
                     average_prize_buy: data.dataBuy.average_prize,
                     number_of_ads_rent: data.dataRent.number_of_ads,
                     average_prize_rent: data.dataRent.average_prize,
-                    normalized_prize_buy: (data.dataRent.average_prize_buy / maxValues.maxPrizeBuy),
-                    normalized_ads_buy: (data.dataRent.number_of_ads_buy / maxValues.maxNumberAdsBuy),
-                    normalized_prize_rent: (data.dataRent.average_prize_rent / maxValues.maxPrizeRent),
-                    normalized_ads_rent: (data.dataRent.number_of_ads_rent / maxValues.maxNumberAdsRent),
+                    normalized_prize_buy: (data.dataBuy.average_prize / maxValues.maxPrizeBuy),
+                    normalized_ads_buy: (data.dataBuy.number_of_ads / maxValues.maxNumberAdsBuy),
+                    normalized_prize_rent: (data.dataRent.average_prize / maxValues.maxPrizeRent),
+                    normalized_ads_rent: (data.dataRent.number_of_ads / maxValues.maxNumberAdsRent),
                     date: data.date
                 };
             } else {
@@ -48,8 +48,8 @@ module.exports = class GeoJsonGeneratorFromResult {
                     name: piece,
                     number_of_ads_rent: data.number_of_ads,
                     average_prize_rent: data.average_prize,
-                    normalized_prize_rent: (data.average_prize_rent / maxValues.maxPrizeRent),
-                    normalized_ads_rent: (data.number_of_ads_rent / maxValues.maxNumberAdsRent),
+                    normalized_prize_rent: (data.average_prize / maxValues.maxPrizeRent),
+                    normalized_ads_rent: (data.number_of_ads / maxValues.maxNumberAdsRent),
                     date: data.date
                 };
             }
@@ -73,8 +73,6 @@ module.exports = class GeoJsonGeneratorFromResult {
             "fill-opacity": 0.2
         }
         */
-
-
 
         const bbox = [boundingBox[1][0], boundingBox[1][1], boundingBox[0][0], boundingBox[0][1]];
         const coordinates = [[[bbox[0], bbox[3]], [bbox[2], bbox[3]], [bbox[2], bbox[1]], [bbox[0], bbox[1]], [bbox[0], bbox[3]]]]
