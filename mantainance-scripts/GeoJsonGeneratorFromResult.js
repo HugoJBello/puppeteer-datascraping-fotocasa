@@ -20,7 +20,9 @@ module.exports = class GeoJsonGeneratorFromResult {
         return result;
     }
 
-    generateFeature(boundingBox, data, piece, maxValues) {
+    //modeoutpu can be "buy-prize" "buy-ads" "rent-prize" or "rent-ads", first param is buy/rent second if we want to display
+    // number of ads or average prize. This will set the stiles of the geojson
+    generateFeature(boundingBox, data, piece, maxValues, modeOutput = "buy-prize") {
         const feature = {
             type: "Feature", properties: {}, bbox: [], geometry: {
                 type: "Polygon", coordinates: []
@@ -35,21 +37,36 @@ module.exports = class GeoJsonGeneratorFromResult {
                     average_prize_buy: data.dataBuy.average_prize,
                     number_of_ads_rent: data.dataRent.number_of_ads,
                     average_prize_rent: data.dataRent.average_prize,
+                    normalized_prize_buy: (data.dataRent.average_prize_buy / maxValues.maxPrizeBuy),
+                    normalized_ads_buy: (data.dataRent.number_of_ads_buy / maxValues.maxNumberAdsBuy),
+                    normalized_prize_rent: (data.dataRent.average_prize_rent / maxValues.maxPrizeRent),
+                    normalized_ads_rent: (data.dataRent.number_of_ads_rent / maxValues.maxNumberAdsRent),
                     date: data.date
                 };
             } else {
                 feature.properties = {
                     name: piece,
-                    number_of_ads: data.number_of_ads,
-                    average_prize: data.average_prize,
+                    number_of_ads_rent: data.number_of_ads,
+                    average_prize_rent: data.average_prize,
+                    normalized_prize_rent: (data.average_prize_rent / maxValues.maxPrizeRent),
+                    normalized_ads_rent: (data.number_of_ads_rent / maxValues.maxNumberAdsRent),
                     date: data.date
                 };
             }
         }
 
-        const normalizedPrizeBuy = (feature.properties.average_prize_buy / maxValues.maxPrizeBuy)
-        feature.properties.fill = "#555555";
-        feature.properties["fill-opacity"] = normalizedPrizeBuy * 0.8;
+        const maxOpacity = 0.8;
+        if (modeOutput === "buy-prize") {
+            feature.properties["fill-opacity"] = feature.properties.normalized_prize_buy * maxOpacity;
+        } else if (modeOutput === "buy-ads") {
+            feature.properties["fill-opacity"] = feature.properties.normalized_ads_buy * maxOpacity;
+        } else if (modeOutput === "rent-prize") {
+            feature.properties["fill-opacity"] = feature.properties.normalized_prize_rent * maxOpacity;
+        } else {
+            feature.properties["fill-opacity"] = feature.properties.normalized_ads_rent * maxOpacity;
+        }
+        feature.properties.fill = "#ff0000";
+
         /*
         feature.geometry.style = {
             "stroke-width": "3",
